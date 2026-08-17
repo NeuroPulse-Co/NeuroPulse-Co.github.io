@@ -1,0 +1,255 @@
+.gantt-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.gantt-summary-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.gantt-summary-stat strong {
+  font-size: 1.6rem;
+}
+
+.gantt-summary-stat span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.gantt-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-done { background: var(--teal); }
+.legend-upcoming { background: var(--accent); }
+.legend-today { background: var(--amber); }
+
+.gantt-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.gantt-chart {
+  position: relative;
+  padding: 20px 24px 12px;
+}
+
+.gantt-months {
+  position: relative;
+  height: 24px;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gantt-month {
+  position: absolute;
+  top: 0;
+  transform: translateX(-2px);
+  white-space: nowrap;
+  border-left: 1px solid var(--border-strong);
+  padding-left: 6px;
+}
+
+.gantt-grid {
+  position: absolute;
+  top: 50px;
+  bottom: 12px;
+  left: 24px;
+  right: 24px;
+  pointer-events: none;
+}
+
+.gantt-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.gantt-today-line {
+  position: absolute;
+  top: -38px;
+  bottom: 0;
+  width: 2px;
+  background: var(--amber);
+  z-index: 3;
+}
+
+.gantt-today-line span {
+  position: absolute;
+  top: -18px;
+  left: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.gantt-rows {
+  position: relative;
+  z-index: 2;
+  padding-top: 8px;
+}
+
+.gantt-phase {
+  border-top: 1px solid var(--border);
+  padding: 10px 0 6px;
+}
+
+.gantt-phase:first-child {
+  border-top: none;
+}
+
+.gantt-phase-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text);
+  width: 100%;
+  text-align: left;
+}
+
+.chevron {
+  width: 11px;
+  height: 8px;
+  flex: none;
+  transition: transform 0.15s ease;
+  color: var(--text-faint);
+}
+
+.gantt-phase-toggle.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+.gantt-phase-badge {
+  margin-left: 4px;
+}
+
+.gantt-bar-row {
+  position: relative;
+  height: 24px;
+  margin: 6px 0;
+}
+
+.gantt-bar-row-task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  margin: 4px 0;
+}
+
+.gantt-task-name {
+  width: 280px;
+  flex: none;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+.gantt-track {
+  position: relative;
+  flex: 1;
+  height: 18px;
+}
+
+.gantt-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 0.1s ease, transform 0.1s ease;
+}
+
+.gantt-bar:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.bar-phase {
+  background: linear-gradient(180deg, #6a62ea, var(--accent));
+  height: 18px;
+}
+
+.bar-done {
+  background: linear-gradient(180deg, #23b3a4, var(--teal-dark));
+}
+
+.bar-task {
+  background: #a5b0f5;
+  border: 1px solid var(--accent);
+}
+
+.gantt-tasks {
+  overflow: hidden;
+  max-height: 600px;
+  transition: max-height 0.2s ease;
+}
+
+.gantt-tasks.collapsed {
+  max-height: 0;
+}
+
+.gantt-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--text);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  max-width: 280px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.gantt-tooltip.visible {
+  opacity: 1;
+}
+
+@media (max-width: 700px) {
+  .gantt-task-name {
+    width: 160px;
+    font-size: 0.76rem;
+  }
+}

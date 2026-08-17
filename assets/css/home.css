@@ -1,0 +1,132 @@
+.hero {
+  padding: 88px 0 72px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(79, 70, 229, 0.08), transparent 45%),
+    radial-gradient(circle at 85% 0%, rgba(15, 155, 142, 0.08), transparent 40%);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-inner {
+  max-width: 760px;
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 4.4vw, 3.1rem);
+  margin: 18px 0 20px;
+}
+
+.hero-break {
+  display: none;
+}
+
+.hero-lede {
+  font-size: 1.08rem;
+  color: var(--text-muted);
+  max-width: 640px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 26px 0 18px;
+}
+
+.hero-meta {
+  font-size: 0.85rem;
+  color: var(--text-faint);
+  margin: 0;
+}
+
+.section {
+  padding: 64px 0;
+}
+
+.section-alt {
+  background: var(--bg-alt);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+.section-sub {
+  color: var(--text-muted);
+  max-width: 640px;
+  margin-bottom: 32px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 860px) {
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card.pad {
+  padding: 26px;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  margin: 12px 0 8px;
+}
+
+.card p {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  margin-bottom: 0;
+}
+
+.approach-card {
+  position: relative;
+  border-top: 3px solid var(--accent);
+}
+
+.approach-index {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.card-link {
+  display: inline-block;
+  margin-top: 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.quick-link {
+  display: block;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.quick-link:hover {
+  text-decoration: none;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.quick-link-icon {
+  font-size: 1.6rem;
+}
