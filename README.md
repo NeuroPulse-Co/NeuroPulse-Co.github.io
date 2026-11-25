@@ -1,26 +1,46 @@
-# NeuroPulse-Co.github.io
+# NeuroPulse website
 
-Documentation site for **NeuroPulse** &mdash; *Structure-Function-Aware Pruning for Continual Learning*, a BSc Eng (Hons) Final Year Project (Dept. of Computer Science & Engineering, University of Moratuwa).
+The source of [neuropulse-co.github.io](https://neuropulse-co.github.io): the public lab notebook of the NeuroPulse project. It is built with [Astro](https://astro.build) and deployed by GitHub Actions.
 
-Live at: https://neuropulse-co.github.io/
+## Where the content comes from
 
-## What's here
+Most of the site is **not written here**. The research repositories publish it, and this repository only shapes it into pages.
 
-Plain HTML/CSS/JS, no build step, no framework:
+| Content | Source | How it gets here |
+|---|---|---|
+| Study pages and figures | `showcase/` on `main` of each repo in [`registry.yaml`](registry.yaml) | `scripts/sync-showcase.mjs` sparse-clones each repo's `showcase/` at build time |
+| Lab notes from studies | `showcase/posts/*.md` in the research repos | same; posts with `draft: true` are skipped |
+| Workstreams and people | `standards/workstreams.yaml` and `people.yaml` in [NeuroPulse-Co/.github](https://github.com/NeuroPulse-Co/.github) | same sync |
+| Workstream explainers | [`src/content/workstreams/W*.md`](src/content/workstreams/) | written here |
+| Glossary, timeline | [`src/data/glossary.yaml`](src/data/glossary.yaml), [`src/data/timeline.yaml`](src/data/timeline.yaml) | written here |
+| Site-wide lab notes | `src/content/posts/*.md` | written here (same frontmatter as research posts) |
 
-- `index.html` &mdash; home page
-- `proposal/index.html` &mdash; the full project proposal as an interactive slide deck (Minimal / Explained density toggle, KaTeX math, interactive illustrations)
-- `timeline/index.html` &mdash; interactive project Gantt timeline
-- `team/index.html` &mdash; team & supervisors
-- `assets/css/` &mdash; stylesheets (`base.css` holds shared design tokens/nav/footer; each page has its own stylesheet)
-- `assets/js/` &mdash; `deck.js` (slide engine), `deck-data.*.js` (slide content per chapter), `widgets.js` (interactive illustrations), `timeline.js` + `timeline-data.js` (Gantt component), `nav.js` (nav behavior)
-- `NeuroPulse_FYP_Proposal/` &mdash; the original LaTeX source the deck content was transcribed from
+Research repositories create their `showcase/` with `record.py promote`, which follows the [record standard](https://github.com/NeuroPulse-Co/.github/blob/main/standards/RECORDS.md). The schemas in [`src/content.config.ts`](src/content.config.ts) mirror that standard. If a showcase file breaks it, the build fails and names the file and field.
 
-Just open any `index.html` in a browser &mdash; everything uses relative paths, no server required. One external dependency: [KaTeX](https://katex.org/) via CDN, for math rendering in the deck.
+## Run it locally
 
-## Maintenance notes
+```bash
+npm install
+SHOWCASE_LOCAL=.. npm run dev      # read showcase/ from sibling checkouts (../ASF-S, ../AFC-Prune, ...)
+npm run dev                        # or fetch them from GitHub, like CI does
+npm run build && npm run check-links
+```
 
-- **Proposal PDF**: the "Download PDF" links point to `assets/proposal.pdf`, which doesn't exist yet. Drop the compiled proposal PDF at that exact path and the links will work.
-- **Team bios & photos**: `team/index.html` currently has placeholder bio text and CSS-generated initials avatars. Replace the placeholder text, and add an `<img>` inside a `.avatar` element to swap in a real photo.
-- **Timeline**: `assets/js/timeline-data.js` holds the Gantt data (phases/tasks/dates), transcribed from `NeuroPulse_FYP_Proposal/images/projectf timeline (3).png`. Update it directly if the schedule changes.
-- **Proposal deck content**: each chapter's slide content lives in its own `assets/js/deck-data.*.js` file as plain JS objects (`minimal` = section-level summary, `subs` = subsection-level detail for Explained mode). Edit those to update the deck without touching the engine.
+## Deployment
+
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) builds and deploys on:
+- every push to `main`
+- every `showcase-updated` dispatch, which research repos send when their `showcase/` changes on `main`
+- once a night, as a safety net
+- a manual run from the Actions tab
+
+Pull requests are built and link-checked but not deployed. Pages must use **GitHub Actions** as its source (Settings → Pages).
+
+## Common tasks
+
+The full team guide, covering what goes where, how to add evidence, how to publish a lab note and how to fix failures, is [standards/WEBSITE.md](https://github.com/NeuroPulse-Co/.github/blob/main/standards/WEBSITE.md).
+
+- **Add a research repository:** add it to `registry.yaml`. Until it has a `showcase/` folder, it is skipped with a warning.
+- **Publish a lab note:** in the research repo, edit the draft that `record.py promote` created in `showcase/posts/`, follow [STYLE.md](https://github.com/NeuroPulse-Co/.github/blob/main/standards/STYLE.md), set `draft: false`, and merge it to `main`.
+- **Update the timeline:** edit `src/data/timeline.yaml` and set `done: true` on finished phases and tasks.
+- **Change the look:** the visual system is described in [`DESIGN.md`](DESIGN.md). The tokens are in `src/styles/base.css` and the components in `src/styles/site.css`.

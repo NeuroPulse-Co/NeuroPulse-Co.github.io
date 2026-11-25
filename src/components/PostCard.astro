@@ -1,0 +1,12 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { postPath, fmtDate } from "../lib/data";
+interface Props { post: CollectionEntry<"posts"> }
+const { post } = Astro.props;
+const d = post.data;
+---
+<a class="card" href={postPath(post)}>
+  <div class="card-meta"><span class="ws-tag">{d.workstream}</span><span class="muted small">{fmtDate(d.date)} · {d.authors.join(", ")}</span></div>
+  <h3>{d.title}</h3>
+  <p class="muted">{d.summary}</p>
+</a>

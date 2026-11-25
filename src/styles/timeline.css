@@ -1,0 +1,267 @@
+.gantt-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.gantt-summary-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.gantt-summary-stat strong {
+  font-size: 1.6rem;
+}
+
+.gantt-summary-stat span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.gantt-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.legend-done { background: var(--teal); }
+.legend-upcoming { background: var(--accent); }
+.legend-today { background: var(--amber); }
+
+.gantt-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.gantt-chart {
+  position: relative;
+  padding: 40px 24px 12px; /* room for the "Today" label above the month axis */
+}
+
+.gantt-months {
+  position: relative;
+  height: 24px;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.gantt-month {
+  position: absolute;
+  top: 0;
+  transform: translateX(-2px);
+  white-space: nowrap;
+  border-left: 1px solid var(--border-strong);
+  padding-left: 6px;
+}
+
+.gantt-grid {
+  position: absolute;
+  top: 50px;
+  bottom: 12px;
+  left: 24px;
+  right: 24px;
+  pointer-events: none;
+}
+
+.gantt-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.gantt-today-line {
+  position: absolute;
+  top: -38px;
+  bottom: 0;
+  width: 2px;
+  background: var(--amber);
+  z-index: 1; /* below .gantt-rows */
+}
+
+.gantt-today-line span {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+.gantt-rows {
+  position: relative;
+  z-index: 4; /* above the Today rule, so labels and bars are never struck through */
+  padding-top: 8px;
+}
+
+.gantt-phase {
+  border-top: 1px solid var(--border);
+  padding: 10px 0 6px;
+}
+
+.gantt-phase:first-child {
+  border-top: none;
+}
+
+.gantt-phase-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  width: 100%;
+  text-align: left;
+}
+
+.chevron {
+  width: 11px;
+  height: 8px;
+  flex: none;
+  transition: transform 0.15s ease;
+  color: var(--text-faint);
+}
+
+.gantt-phase-toggle.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+.gantt-phase-badge {
+  margin-left: 4px;
+}
+
+.gantt-bar-row {
+  position: relative;
+  height: 24px;
+  margin: 6px 0;
+}
+
+/* Task rows: the track spans the full chart width so bar percentages line up with the month axis
+   (a fixed side label used to shift every bar right). The name sits on the bar's own line, beside it. */
+.gantt-bar-row-task {
+  height: 22px;
+  margin: 4px 0;
+}
+
+.gantt-track {
+  position: relative;
+  height: 100%;
+}
+
+.gantt-task-name {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--surface);
+  padding: 0 4px;
+  margin-left: -4px;
+}
+
+.gantt-bar.gantt-bar-task {
+  top: 4px;
+  height: 14px;
+}
+
+.gantt-bar {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: filter 0.1s ease;
+}
+
+/* Hover: a slight lift in tone only; the bar does not move. */
+.gantt-bar:hover {
+  filter: brightness(1.08);
+}
+
+.bar-phase {
+  background: var(--accent);
+  height: 18px;
+}
+
+.bar-done {
+  background: var(--teal);
+}
+
+.bar-task {
+  background: var(--accent-soft-strong);
+  border: 1px solid var(--accent);
+}
+
+.gantt-tasks {
+  overflow: hidden;
+  max-height: 600px;
+  transition: max-height 0.2s ease;
+}
+
+.gantt-tasks.collapsed {
+  max-height: 0;
+}
+
+.gantt-tooltip {
+  position: fixed;
+  z-index: 1000;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  max-width: 280px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.gantt-tooltip.visible {
+  opacity: 1;
+}
+
+@media (max-width: 700px) {
+  .gantt-task-name {
+    font-size: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gantt-tasks, .gantt-phase-toggle .chevron { transition: none; }
+}

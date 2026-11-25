@@ -1,0 +1,50 @@
+# Builds the site from every registered repo's showcase/ (on main) and deploys it to GitHub Pages.
+# Triggers: a push here, a `showcase-updated` dispatch from a research repo (notify-site workflow),
+# a nightly rebuild as a safety net, or a manual run. Pull requests only build and check links.
+name: deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+  repository_dispatch:
+    types: [showcase-updated]
+  schedule:
+    - cron: "30 0 * * *"   # 06:00 in Sri Lanka
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.event_name == 'pull_request' && github.ref || 'deploy' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build        # runs scripts/sync-showcase.mjs first, then validates every page
+      - run: npm run check-links
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

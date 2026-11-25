@@ -1,0 +1,19 @@
+---
+// One row of a study's results table: the number, what it is compared with, and the data behind it.
+import { SPLIT_LABEL, fmtNumber } from "../lib/data";
+interface Props { kr: { label: string; value: number; unit: string; split: string; n_seeds: number; std?: number; ci95?: [number, number]; compare?: { label: string; value: number } } }
+const { kr } = Astro.props;
+// YAML drops trailing zeros (-5.00 -> -5), so show every number in a row with the precision of the
+// most precise one, e.g. "−5.00 ± 0.42" rather than "-5 ± 0.42".
+const dec = (v?: number) => (v === undefined || Number.isInteger(v) || Math.abs(v) < 1e-3 ? 0 : String(v).split(".")[1]?.length ?? 0);
+const d = Math.max(dec(kr.value), dec(kr.std), dec(kr.compare?.value), ...(kr.ci95 ?? []).map(dec));
+const f = (v: number) => (Math.abs(v) >= 1000 || (v !== 0 && Math.abs(v) < 1e-3) ? fmtNumber(v) : v.toFixed(d)).replace(/^-/, "−");
+const spread = kr.std !== undefined ? ` ± ${kr.std.toFixed(d)}` : kr.ci95 ? ` (95% CI ${f(kr.ci95[0])} to ${f(kr.ci95[1])})` : "";
+const seeds = kr.n_seeds === 1 ? "1 seed" : `${kr.n_seeds} seeds`;
+---
+<tr>
+  <th scope="row">{kr.label}</th>
+  <td class="num"><strong>{f(kr.value)}</strong>{spread}<span class="unit">{kr.unit}</span></td>
+  <td class="num">{kr.compare ? <><strong>{f(kr.compare.value)}</strong><span class="unit">{kr.compare.label}</span></> : <span class="muted">—</span>}</td>
+  <td class="data">{SPLIT_LABEL[kr.split]}{kr.split !== "none" && `, ${seeds}`}</td>
+</tr>

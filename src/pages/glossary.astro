@@ -1,0 +1,22 @@
+---
+import Base from "../layouts/Base.astro";
+import { glossary } from "../lib/data";
+const terms = glossary();
+const anchor = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+---
+<Base title="Glossary" description="Plain-language definitions of the terms used across the NeuroPulse site.">
+  <div class="container">
+    <section class="section">
+      <h1>Glossary</h1>
+      <p class="lede">The terms we use most, in plain language. If a page uses a term that is not here, tell us and we will add it.</p>
+      <dl class="glossary">
+        {terms.map((t) => (
+          <>
+            <dt id={anchor(t.term)}>{t.term}{t.full && <span class="full">{t.full}</span>}</dt>
+            <dd>{t.definition}</dd>
+          </>
+        ))}
+      </dl>
+    </section>
+  </div>
+</Base>

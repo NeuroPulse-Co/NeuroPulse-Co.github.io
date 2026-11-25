@@ -1,0 +1,19 @@
+---
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import { publishedPosts } from "../../lib/data";
+const posts = await publishedPosts();
+---
+<Base title="Lab notes" description="Milestone write-ups from the NeuroPulse project.">
+  <div class="container">
+    <section class="section">
+      <h1>Lab notes</h1>
+      <p class="lede">When a study closes, the person who ran it writes it up here. Each note covers what we asked, what we expected, what happened and what we will do next. These notes are also the first drafts of our thesis chapters.</p>
+    </section>
+    {posts.length > 0 ? (
+      <div class="post-list">{posts.map((p) => <PostCard post={p} />)}</div>
+    ) : (
+      <p class="empty">The first notes are being written. Meanwhile, every finished study already has a full page with its verdict and evidence: see <a href="/studies/">Studies</a>.</p>
+    )}
+  </div>
+</Base>

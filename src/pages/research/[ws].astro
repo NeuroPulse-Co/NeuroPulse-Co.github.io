@@ -1,0 +1,41 @@
+---
+import Base from "../../layouts/Base.astro";
+import StudyCard from "../../components/StudyCard.astro";
+import PostCard from "../../components/PostCard.astro";
+import { getCollection, render } from "astro:content";
+import { studies, publishedPosts, workstreamMeta, repoUrl } from "../../lib/data";
+
+export async function getStaticPaths() {
+  const ws = await getCollection("workstreams");
+  return ws.map((w) => ({ params: { ws: w.data.id.toLowerCase() }, props: { w } }));
+}
+const { w } = Astro.props;
+const { Content } = await render(w);
+const meta = workstreamMeta().find((m) => m.id === w.data.id);
+const mine = (await studies()).filter((s) => s.data.workstream === w.data.id);
+const posts = (await publishedPosts()).filter((p) => p.data.workstream === w.data.id);
+---
+<Base title={`${w.data.id}: ${w.data.title}`} description={w.data.tagline}>
+  <div class="container">
+    <a class="back" href="/research/">All workstreams</a>
+    <section class="section">
+      <span class="ws-tag">{w.data.id}</span>
+      <h1 style="margin-top:8px">{w.data.title}</h1>
+      <p class="lede">{meta?.question ?? w.data.tagline}</p>
+      <div class="prose"><Content /></div>
+      {meta && meta.repos.length > 0 && (
+        <p class="muted small">Code and records: {meta.repos.map((r, i) => <>{i > 0 && ", "}<a href={repoUrl(r)}>{r}</a></>)}</p>
+      )}
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Studies</h2></div>
+      {mine.length > 0 ? <div class="grid grid-2">{mine.map((s) => <StudyCard study={s} />)}</div> : <p class="empty">No studies have started in this workstream yet.</p>}
+    </section>
+    {posts.length > 0 && (
+      <section class="section">
+        <div class="section-head"><h2>Lab notes</h2></div>
+        <div class="grid grid-2">{posts.map((p) => <PostCard post={p} />)}</div>
+      </section>
+    )}
+  </div>
+</Base>

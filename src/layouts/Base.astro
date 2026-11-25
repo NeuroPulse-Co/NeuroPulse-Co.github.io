@@ -1,0 +1,82 @@
+---
+// Shared page shell: head, sticky header with navigation, footer.
+import "../styles/base.css";
+import "../styles/site.css";
+
+interface Props { title: string; description?: string; wide?: boolean }
+const { title, description = "NeuroPulse: structure-function-aware pruning for continual learning. A final-year research project at the University of Moratuwa, written up as we go.", wide = false } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  { href: "/", label: "Home" },
+  { href: "/research/", label: "Research" },
+  { href: "/studies/", label: "Studies" },
+  { href: "/blog/", label: "Lab notes" },
+  { href: "/timeline/", label: "Timeline" },
+  { href: "/glossary/", label: "Glossary" },
+  { href: "/team/", label: "Team" },
+];
+const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+const fullTitle = title === "NeuroPulse" ? title : `${title} · NeuroPulse`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="nav-wrap">
+        <a class="brand" href="/">
+          <svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path class="edge" d="M16 9.2 L7.5 17.5 M16 9.2 L24.5 17.5 M8 22.5 L14.5 26 M24 22.5 L17.5 26" stroke-width="1.6" stroke-linecap="round" />
+            <circle class="node-alt" cx="16" cy="6" r="3.4" /><circle class="node" cx="6" cy="20" r="3.4" />
+            <circle class="node" cx="26" cy="20" r="3.4" /><circle class="node-alt" cx="16" cy="27" r="2.6" />
+          </svg>
+          NeuroPulse
+        </a>
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="site-nav" id="nav-toggle"><span></span><span></span><span></span></button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+          {nav.map((n) => <a href={n.href} class={active(n.href) ? "active" : undefined} aria-current={active(n.href) ? "page" : undefined}>{n.label}</a>)}
+        </nav>
+      </div>
+    </header>
+    <main id="main" tabindex="-1" class:list={["page", { "page-wide": wide }]}>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <span>© 2026 NeuroPulse · BSc Eng (Hons) · Department of Computer Science and Engineering, University of Moratuwa</span>
+        <span><a href="https://github.com/NeuroPulse-Co">GitHub</a> · <a href="https://github.com/NeuroPulse-Co/.github/blob/main/standards/RECORDS.md">Record standard</a> · <a href="/proposal/">Proposal</a></span>
+      </div>
+    </footer>
+    <script is:inline>
+      (function () {
+        var t = document.getElementById("nav-toggle"), n = document.getElementById("site-nav");
+        if (!t || !n) return;
+        function set(open) {
+          n.classList.toggle("open", open);
+          t.setAttribute("aria-expanded", open ? "true" : "false");
+          t.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        }
+        t.addEventListener("click", function () { set(!n.classList.contains("open")); });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && n.classList.contains("open")) { set(false); t.focus(); }
+        });
+        document.addEventListener("click", function (e) {
+          if (n.classList.contains("open") && !n.contains(e.target) && !t.contains(e.target)) set(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

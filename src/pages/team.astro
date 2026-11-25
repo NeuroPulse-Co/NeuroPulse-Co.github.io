@@ -1,0 +1,54 @@
+---
+import Base from "../layouts/Base.astro";
+import { people, studies, studyPath, workstreamMeta } from "../lib/data";
+const all = await studies();
+const ppl = people();
+const initials = (n: string) => n.split(/\s+/).filter((w) => !w.includes(".")).map((w) => w[0]).join("").slice(0, 2) || n[0];
+const nameOf = (p: (typeof ppl)[number]) => p.short ?? p.name;
+const studiesOf = (p: (typeof ppl)[number]) => all.filter((s) => s.data.owner.some((o) => o === p.name || o === p.short));
+const wsOf = (p: (typeof ppl)[number]) => workstreamMeta().filter((w) => w.owner === p.name || w.owner === p.short);
+const students = ppl.filter((p) => p.role === "student");
+const supervisors = ppl.filter((p) => p.role.startsWith("supervisor"));
+---
+<Base title="Team" description="The students and supervisor behind NeuroPulse.">
+  <div class="container">
+    <section class="section">
+      <h1>The team</h1>
+      <p class="lede">Four final-year Computer Science and Engineering students at the University of Moratuwa, and our supervisor. The studies listed under each person are the ones they own, taken directly from our records.</p>
+    </section>
+    <section class="section">
+      <h2>Students</h2>
+      <div class="grid grid-2">
+        {students.map((p) => {
+          const mine = studiesOf(p);
+          const ws = wsOf(p);
+          return (
+            <div class="card">
+              <div class="person">
+                <div class="avatar" aria-hidden="true">{initials(nameOf(p))}</div>
+                <div>
+                  <h3 style="margin:0">{nameOf(p)}</h3>
+                  <p class="muted small" style="margin:0">{p.name}{p.index && ` · ${p.index}`}{p.github && <> · <a href={`https://github.com/${p.github}`}>GitHub</a></>}</p>
+                </div>
+              </div>
+              {ws.length > 0 && <p class="small" style="margin-top:14px">Leads {ws.map((w) => `${w.id} (${w.title})`).join(", ")}</p>}
+              {mine.length > 0 ? (
+                <ul class="small" style="margin:14px 0 0">{mine.map((s) => <li><a href={studyPath(s)}>{s.data.title}</a></li>)}</ul>
+              ) : (
+                <p class="muted small" style="margin:14px 0 0">No studies recorded yet.</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+    <section class="section">
+      <h2>{supervisors.length === 1 ? "Supervisor" : "Supervisors"}</h2>
+      <div class="grid grid-2">
+        {supervisors.map((p) => (
+          <div class="card"><div class="person"><div class="avatar" aria-hidden="true">{initials(nameOf(p))}</div><div><h3 style="margin:0">{p.name}</h3><p class="muted small" style="margin:0">Supervisor</p></div></div></div>
+        ))}
+      </div>
+    </section>
+  </div>
+</Base>
