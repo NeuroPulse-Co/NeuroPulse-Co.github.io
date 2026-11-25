@@ -1,0 +1,13 @@
+---
+import type { CollectionEntry } from "astro:content";
+import StatusBadge from "./StatusBadge.astro";
+import { studyPath } from "../lib/data";
+interface Props { study: CollectionEntry<"studies"> }
+const { study } = Astro.props;
+const d = study.data;
+---
+<a class="card" href={studyPath(study)}>
+  <div class="card-meta"><StatusBadge status={d.status} /><span class="ws-tag">{d.workstream}</span><span class="muted small">{d.repo}</span></div>
+  <h3>{d.title}</h3>
+  <p class="muted">{d.summary}</p>
+</a>

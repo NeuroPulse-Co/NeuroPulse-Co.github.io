@@ -1,0 +1,81 @@
+---
+import Base from "../../../layouts/Base.astro";
+import StatusBadge from "../../../components/StatusBadge.astro";
+import KeyResult from "../../../components/KeyResult.astro";
+import PostCard from "../../../components/PostCard.astro";
+import { getCollection, render } from "astro:content";
+import { STATUS_HELP, fmtDate, publishedPosts, repoUrl } from "../../../lib/data";
+
+export async function getStaticPaths() {
+  const all = await getCollection("studies");
+  return all.map((s) => ({ params: { repo: s.data.repo.toLowerCase(), id: s.data.id }, props: { s } }));
+}
+const { s } = Astro.props;
+const d = s.data;
+const { Content } = await render(s);
+const ws = (await getCollection("workstreams")).find((w) => w.data.id === d.workstream);
+const posts = (await publishedPosts()).filter((p) => p.data.study === d.id);
+const logUrl = `${repoUrl(d.repo)}/blob/main/studies/${d.id}/LOG.md`;
+const running = d.status === "running" || d.status === "planned";
+---
+<Base title={d.title} description={d.summary}>
+  <div class="container">
+    <a class="back" href={`/research/${d.workstream.toLowerCase()}/`}>{d.workstream}: {ws?.data.title}</a>
+    <header class="study-head">
+      <h1>{d.title}</h1>
+      <div class="facts">
+        <StatusBadge status={d.status} />
+        <span><strong>By</strong> {d.owner.join(", ")}</span>
+        <span><strong>Started</strong> {fmtDate(d.started)}</span>
+        {d.closed && <span><strong>Closed</strong> {fmtDate(d.closed)}</span>}
+        <span><a href={d.code_url}>Code and records</a> · <a href={logUrl}>Lab log</a></span>
+      </div>
+      <p class="lede">{d.summary}</p>
+    </header>
+
+    <dl class="record study-record">
+      <div><dt>The question</dt><dd>{d.question}</dd></div>
+      <div><dt>What we expected</dt><dd>{d.hypothesis}</dd></div>
+      <div>
+        <dt>How we would know</dt>
+        <dd>
+          {d.success_criterion}
+          <span class="muted">
+            {d.criterion === "pre_registered"
+              ? "Pre-registered: this criterion was written down before any results existed."
+              : "Post hoc: this criterion was written after results existed, so read it as a summary, not a test we set ourselves in advance."}
+          </span>
+        </dd>
+      </div>
+    </dl>
+
+    {d.verdict && (
+      <div class={`callout verdict status-${d.status}`}>
+        <p><strong>Verdict.</strong> {d.verdict}</p>
+        <p class="muted small" style="margin:0">{STATUS_HELP[d.status]}</p>
+      </div>
+    )}
+
+    {d.key_results && d.key_results.length > 0 && (
+      <section>
+        <h2 style="margin-top:36px">{running ? "Results so far" : "Key results"}</h2>
+        {running && <p class="muted">This study is still running, so these numbers are interim and may change.</p>}
+        <div class="results-wrap">
+          <table class="results">
+            <thead><tr><th scope="col">Result</th><th scope="col">Our value</th><th scope="col">Compared with</th><th scope="col">Data</th></tr></thead>
+            <tbody>{d.key_results.map((kr) => <KeyResult kr={kr} />)}</tbody>
+          </table>
+        </div>
+      </section>
+    )}
+
+    <article class="prose"><Content /></article>
+
+    {posts.length > 0 && (
+      <section class="section" style="margin-top:48px">
+        <h2>Lab notes about this study</h2>
+        <div class="grid grid-2">{posts.map((p) => <PostCard post={p} />)}</div>
+      </section>
+    )}
+  </div>
+</Base>

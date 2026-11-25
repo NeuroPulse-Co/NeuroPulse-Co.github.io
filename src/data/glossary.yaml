@@ -1,0 +1,203 @@
+# Terms used across the site. Keep definitions to two or three plain sentences.
+- term: ASF-S
+  full: Artificial Structure Function Search
+  definition: >-
+    The structured pruning method our project starts from. It decides which convolutional filters
+    to remove by asking how each filter shapes the functional connectivity of the network's output
+    layer, an idea borrowed from how brain structure relates to brain function.
+
+- term: AFC
+  full: Artificial Functional Connectivity
+  definition: >-
+    A graph that describes how similarly the output units of a network respond across many images.
+    Two units are strongly connected if they tend to activate together. ASF-S builds one graph from
+    correctly classified images and one from misclassified ones.
+
+- term: PG1
+  full: First principal gradient
+  definition: >-
+    The main axis of variation of an AFC graph, found with a diffusion-map eigen-decomposition.
+    It orders the output units along a single line, from one end of the network's "functional
+    map" to the other.
+
+- term: PGI
+  full: Principal Gradient Importance
+  definition: >-
+    The score ASF-S gives each convolutional filter. It compares PG1 for correct and incorrect
+    predictions, and rates a filter by how strongly it is tied to that difference. Filters with low
+    PGI are pruned first. We found that the paper's formula is ambiguous about how its vectors line
+    up, so we also use a corrected ("aligned") version.
+
+- term: PCA
+  full: Principal component analysis
+  definition: >-
+    A standard way to find the few directions along which a set of vectors varies most. ASF-S uses
+    it to summarise the difference between the "correct" and "incorrect" principal gradients.
+
+- term: Structured pruning
+  full: ""
+  definition: >-
+    Removing whole units of a network, such as entire convolutional filters, rather than individual
+    weights. The result is a genuinely smaller and faster network, not just a sparser one.
+
+- term: Filter
+  full: Convolutional filter
+  definition: >-
+    One small learned pattern detector in a convolutional layer. Each filter produces one channel of
+    the layer's output, so removing a filter also removes everything that reads that channel.
+
+- term: FC layer
+  full: Fully connected layer
+  definition: >-
+    A layer in which every input is connected to every output. In the small networks we study, the
+    final FC layer turns image features into class scores, and it holds most of the parameters.
+
+- term: Fine-tuning
+  full: ""
+  definition: >-
+    Training a model a little more after changing it, for example after pruning, so that it recovers
+    lost accuracy. "FC-only" or "head-only" fine-tuning retrains only the final layer; "full"
+    fine-tuning retrains everything that remains.
+
+- term: Recovery tier
+  full: ""
+  definition: >-
+    Our name for how much a pruned network is allowed to change afterwards, from T0 (nothing) through
+    a closed-form refit of the output layer (T1r) to full fine-tuning (T4). Comparing selectors at
+    the same tier keeps the comparison fair.
+
+- term: L1 norm
+  full: ""
+  definition: >-
+    The sum of the absolute values of a filter's weights. Ranking filters by it, and removing the
+    smallest, is the simplest "magnitude" pruning rule and the baseline every new method must beat.
+
+- term: Taylor importance
+  full: ""
+  definition: >-
+    A score that estimates how much the loss would rise if a filter were removed, using the filter's
+    activations and gradients. In our experiments it is one of the strongest simple selectors.
+
+- term: BN-γ
+  full: Batch-normalisation scale
+  definition: >-
+    The learned scale factor that batch normalisation applies to each channel. A channel with a tiny
+    scale contributes little, so ranking filters by it is another common pruning rule.
+
+- term: Continual learning
+  full: ""
+  definition: >-
+    Training one model on a sequence of tasks, one after another, without going back to retrain on
+    the earlier ones. The central difficulty is catastrophic forgetting.
+
+- term: Catastrophic forgetting
+  full: ""
+  definition: >-
+    What happens when a network trained on a new task overwrites the weights an earlier task relied
+    on, so its accuracy on the earlier task collapses.
+
+- term: TIL
+  full: Task-incremental learning
+  definition: >-
+    The continual learning setting we study. Tasks arrive one at a time, and at test time the model
+    is told which task an input belongs to. It is the easiest setting, which makes it the right place
+    to test a new idea first.
+
+- term: Parameter isolation
+  full: ""
+  definition: >-
+    A family of continual learning methods that give each task its own subset of the network's
+    weights and protect that subset from later tasks.
+
+- term: PackNet
+  full: ""
+  definition: >-
+    A well-known parameter-isolation method (Mallya and Lazebnik, 2018). After each task it prunes
+    the smallest weights, briefly retrains the rest, and freezes them. Our hard-freezing approach is
+    PackNet with a different importance score, so PackNet is its key baseline.
+
+- term: WSN
+  full: Winning SubNetworks
+  definition: >-
+    A parameter-isolation method that learns which weights each task uses, instead of pruning by a
+    fixed rule. It is one of our planned baselines.
+
+- term: EWC
+  full: Elastic Weight Consolidation
+  definition: >-
+    A continual learning method that does not isolate weights but penalises changes to the weights
+    that mattered for earlier tasks. It is one of our planned baselines.
+
+- term: Hard freezing
+  full: ""
+  definition: >-
+    Fixing the weights chosen for a finished task so that later tasks can never change them. It
+    prevents forgetting completely, at the cost of using up network capacity.
+
+- term: Metaplasticity
+  full: ""
+  definition: >-
+    In neuroscience, changes in how easily a synapse can change. In our second approach it means
+    slowing down learning on weights that were important for earlier tasks, instead of freezing them.
+
+- term: ACC
+  full: Average accuracy
+  definition: >-
+    The mean accuracy over all tasks after the model has learned the whole sequence. It is the
+    headline number for continual learning.
+
+- term: BWT
+  full: Backward transfer
+  definition: >-
+    How much learning later tasks changed the accuracy on earlier ones. Negative values mean
+    forgetting. With hard freezing it is zero by construction, so it only tells us something for
+    our soft approach.
+
+- term: FWT
+  full: Forward transfer
+  definition: >-
+    How much having learned earlier tasks helps with a new one, compared with learning it from
+    scratch.
+
+- term: ECE
+  full: Expected calibration error
+  definition: >-
+    How far a model's confidence is from its actual accuracy. A well-calibrated model that says
+    "90% sure" is right about 90% of the time.
+
+- term: Validation split
+  full: ""
+  definition: >-
+    Data held back from training and used to make choices, such as when to stop training or which
+    setting to keep. Every number on this site says whether it comes from validation or test data.
+
+- term: Test split
+  full: ""
+  definition: >-
+    Data used only to report the final result. If it is also used to make choices, the reported
+    numbers become optimistic. Some of the original ASF-S code does this, and our pages say so
+    wherever it applies.
+
+- term: Seed
+  full: Random seed
+  definition: >-
+    The number that fixes all the random choices in a run. Repeating an experiment with several seeds
+    shows how much of a difference is real and how much is luck.
+
+- term: Pre-registered criterion
+  full: ""
+  definition: >-
+    A success criterion written down before any results exist. Our study pages say whether each
+    criterion was pre-registered or written afterwards ("post hoc").
+
+- term: Conv2Net
+  full: ""
+  definition: >-
+    A small network with two convolutional layers and one FC layer (183,434 parameters), the main
+    model in the ASF-S paper and in our reproductions.
+
+- term: Split-CIFAR-10
+  full: ""
+  definition: >-
+    A continual learning benchmark made by cutting the ten CIFAR-10 image classes into five tasks of
+    two classes each. Split-MNIST and Split-CIFAR-100 are built the same way.

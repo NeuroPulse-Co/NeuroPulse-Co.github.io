@@ -1,0 +1,9 @@
+# Research repositories whose showcase/ folder the site publishes.
+# Add a repository here when it has a showcase/ folder (created by `record.py promote`).
+# The site reads only the listed branch (main), as the record standard requires.
+org: NeuroPulse-Co
+standards: { repo: .github, branch: main }   # workstreams.yaml and people.yaml
+repos:
+  - { name: ASF-S, branch: main }
+  - { name: AFC-Prune, branch: main }
+  - { name: ASF-S_Hard_Freezing, branch: main }

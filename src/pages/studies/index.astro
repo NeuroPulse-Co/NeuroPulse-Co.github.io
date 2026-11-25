@@ -1,0 +1,37 @@
+---
+import Base from "../../layouts/Base.astro";
+import StatusBadge from "../../components/StatusBadge.astro";
+import { studies, studyPath, STATUS_LABEL, STATUS_HELP, fmtDate } from "../../lib/data";
+const all = await studies();
+const order = ["running", "closed-positive", "closed-negative", "closed-inconclusive", "planned", "abandoned"];
+---
+<Base title="Studies" description="Every NeuroPulse study: its question, its status and our verdict.">
+  <div class="container">
+    <section class="section">
+      <h1>Every study, and how it ended</h1>
+      <p class="lede">
+        A study is one question with a hypothesis, a success criterion and a recorded answer. Here is every study we have run, newest first.
+        Each page shows the evidence and our reasoning, and links to the code and the lab log.
+      </p>
+      <details class="muted small" style="max-width:46rem">
+        <summary>What the statuses mean</summary>
+        <ul>{order.map((s) => <li><StatusBadge status={s} /> {STATUS_HELP[s]}</li>)}</ul>
+      </details>
+    </section>
+    <section class="section">
+      <table class="study-table">
+        <thead><tr><th>Study</th><th>Status</th><th>Workstream</th><th>Dates</th></tr></thead>
+        <tbody>
+          {all.map((s) => (
+            <tr>
+              <td><a href={studyPath(s)}>{s.data.title}</a><div class="muted small">{s.data.repo} · {s.data.owner.join(", ")}</div></td>
+              <td><StatusBadge status={s.data.status} /></td>
+              <td><span class="ws-tag">{s.data.workstream}</span></td>
+              <td class="muted small">{fmtDate(s.data.started)}{s.data.closed && <> to {fmtDate(s.data.closed)}</>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</Base>

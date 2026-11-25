@@ -1,0 +1,22 @@
+---
+import Base from "../layouts/Base.astro";
+import "../styles/timeline.css";
+import { timeline } from "../lib/data";
+const iso = (d: unknown) => (d instanceof Date ? d.toISOString().slice(0, 10) : String(d));
+const phases = timeline().map((p) => ({ ...p, start: iso(p.start), end: iso(p.end), tasks: p.tasks.map((t) => ({ ...t, start: iso(t.start), end: iso(t.end) })) }));
+const json = JSON.stringify(phases);
+---
+<Base title="Timeline" description="The NeuroPulse project schedule, June 2026 to March 2027.">
+  <div class="container">
+    <section class="section">
+      <h1>Project timeline</h1>
+      <p class="lede">
+        Our schedule from June 2026 to March 2027, revised on 25 November 2026. Reproducing ASF-S took longer than planned and changed what we build next,
+        so the continual learning work now starts in December. Hover over a bar for its dates, and click a phase to fold it.
+      </p>
+      <div id="gantt-root"></div>
+    </section>
+  </div>
+  <script is:inline define:vars={{ json }}>window.TIMELINE_PHASES = JSON.parse(json);</script>
+  <script is:inline src="/timeline.js"></script>
+</Base>

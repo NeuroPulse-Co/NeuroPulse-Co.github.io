@@ -1,0 +1,67 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection } from "astro:content";
+import { studies } from "../../lib/data";
+
+const ws = Object.fromEntries((await getCollection("workstreams")).map((w) => [w.data.id, w.data]));
+const all = await studies();
+const n = (id: string) => all.filter((s) => s.data.workstream === id).length;
+const card = (id: string) => ({ id, href: `/research/${id.toLowerCase()}/`, ...ws[id], count: n(id) });
+const stages = [[card("W0")], [card("W1")], [card("W2")], [card("W3"), card("W4")], [card("W5")]];
+---
+<Base title="Research" description="How the NeuroPulse project fits together: six workstreams, from reproducing ASF-S to continual learning.">
+  <div class="container">
+    <section class="section">
+      <h1>How the project fits together</h1>
+      <p class="lede">
+        Our project has six workstreams. Each one answers a question the next one depends on. We first had to check that the pruning method we build on
+        does what its paper reports (W1). Then we asked whether its central idea holds up under a fair comparison (W2), and only then whether it helps
+        a network learn many tasks (W3 and W4).
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>The six workstreams</h2>
+      <div class="pipeline">
+        {stages.map((stage) => (
+          <div class="stage">
+            <div class="stack">
+              {stage.map((w) => (
+                <a class="card" href={w.href}>
+                  <span class="ws-tag">{w.id}</span>
+                  <h3 style="margin-top:6px">{w.title}</h3>
+                  <p class="muted small">{w.tagline}</p>
+                  <p class="small" style="margin:0">{w.count === 0 ? "No studies yet" : `${w.count} ${w.count === 1 ? "study" : "studies"}`}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="section prose">
+      <h2>The idea we are testing, in six steps</h2>
+      <p>
+        Artificial Structure Function Search (ASF-S) is a way of deciding which convolutional filters a network can lose. Most pruning methods remove the
+        filters with the smallest weights. ASF-S instead looks at how the network's output units behave together, and keeps the filters that shape
+        that behaviour. This is our own summary of the method. The <a href="/glossary/">glossary</a> explains each term.
+      </p>
+    </section>
+    <ol class="flow">
+      <li><strong>Collect responses</strong><span>Show the trained network many images, and record its output-layer activations separately for images it classifies correctly and incorrectly.</span></li>
+      <li><strong>Build connectivity graphs</strong><span>For each group, connect output units that respond similarly. This graph is the Artificial Functional Connectivity (AFC).</span></li>
+      <li><strong>Find the main gradient</strong><span>A diffusion-map analysis orders the units along the graph's main axis of variation, the first principal gradient (PG1).</span></li>
+      <li><strong>Contrast right and wrong</strong><span>Subtract the "incorrect" gradient from the "correct" one, and summarise the difference with principal component analysis.</span></li>
+      <li><strong>Score every filter</strong><span>Principal Gradient Importance (PGI) rates each filter by how strongly its weights align with that difference.</span></li>
+      <li><strong>Prune and recover</strong><span>Remove the lowest-scoring filters, then retrain only the final layer. The paper's claim is that little accuracy is lost.</span></li>
+    </ol>
+    <section class="section prose">
+      <p>
+        Step 5 is where our work found the most trouble. As written, the formula multiplies vectors of different lengths, and the original code resolves
+        this in a way that makes the score close to random. The details are in the <a href="/research/w1/">reproduction studies</a>. Our corrected version
+        is the one we test in <a href="/research/w2/">W2</a>.
+      </p>
+    </section>
+  </div>
+</Base>

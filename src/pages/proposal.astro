@@ -1,0 +1,25 @@
+---
+import Base from "../layouts/Base.astro";
+const canva = "https://www.canva.com/design/DAHSjfz5bEs/P2SwzSzgzpzNjoWE2onkOQ/view";
+---
+<Base title="Proposal" description="The NeuroPulse project proposal (August 2026).">
+  <div class="container">
+    <section class="section">
+      <h1>Our original proposal, August 2026</h1>
+      <p class="lede">
+        This is the proposal we submitted in August 2026. It describes two continual learning approaches built on ASF-S, hard freezing and metaplastic
+        soft consolidation, and it aimed for a framework that needs no replay and no fine-tuning.
+      </p>
+      <div class="callout">
+        <p>
+          <strong>What has changed since.</strong> Our reproductions showed that ASF-S does not keep accuracy without retraining, and that its
+          importance score loses to simple ones in a fair comparison. We therefore no longer claim "fine-tuning-free". We measure how much retraining
+          each method needs, and we added a go/no-go test before building on the score. The <a href="/research/">Research</a> page
+          describes the current plan.
+        </p>
+      </div>
+      <div class="embed"><iframe loading="lazy" src={`${canva}?embed`} title="NeuroPulse proposal deck" allowfullscreen allow="fullscreen"></iframe></div>
+      <p style="margin-top:14px"><a class="btn btn-ghost btn-sm ext" href={canva}>Open on Canva</a></p>
+    </section>
+  </div>
+</Base>

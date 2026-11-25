@@ -1,0 +1,27 @@
+---
+import Base from "../../layouts/Base.astro";
+import { render } from "astro:content";
+import { publishedPosts, fmtDate } from "../../lib/data";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await publishedPosts();
+  return posts.map((p) => ({ params: { slug: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const { Content } = await render(p);
+const study = p.data.study ? (await getCollection("studies")).find((s) => s.data.id === p.data.study) : undefined;
+---
+<Base title={p.data.title} description={p.data.summary}>
+  <div class="container">
+    <a class="back" href="/blog/">All lab notes</a>
+    <article class="prose">
+      <span class="ws-tag">{p.data.workstream}</span>
+      <h1 style="margin-top:8px">{p.data.title}</h1>
+      <p class="muted">{fmtDate(p.data.date)} · {p.data.authors.join(", ")}</p>
+      <p class="lede">{p.data.summary}</p>
+      {study && <p class="callout small">This note reports the study <a href={`/studies/${study.data.repo.toLowerCase()}/${study.data.id}/`}>{study.data.title}</a>, where the full evidence is.</p>}
+      <Content />
+    </article>
+  </div>
+</Base>
