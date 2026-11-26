@@ -3,6 +3,9 @@ import Base from "../../../layouts/Base.astro";
 import StatusBadge from "../../../components/StatusBadge.astro";
 import KeyResult from "../../../components/KeyResult.astro";
 import PostCard from "../../../components/PostCard.astro";
+import EvidenceChart from "../../../components/EvidenceChart.astro";
+import DataTable from "../../../components/DataTable.astro";
+import EvidenceFigure from "../../../components/EvidenceFigure.astro";
 import { getCollection, render } from "astro:content";
 import { STATUS_HELP, fmtDate, publishedPosts, repoUrl } from "../../../lib/data";
 
@@ -17,6 +20,13 @@ const ws = (await getCollection("workstreams")).find((w) => w.data.id === d.work
 const posts = (await publishedPosts()).filter((p) => p.data.study === d.id);
 const logUrl = `${repoUrl(d.repo)}/blob/main/studies/${d.id}/LOG.md`;
 const running = d.status === "running" || d.status === "planned";
+// Visual-first order: diagrams, then charts, then (after the key numbers) tables and figures.
+const ev = d.evidence ?? [];
+const diagrams = ev.filter((e) => e.type === "diagram");
+const charts = ev.filter((e) => e.type === "chart");
+const supporting = ev.filter((e) => e.type === "table" || e.type === "figure");
+const runs = d.runs ?? [];
+const nBackfilled = runs.filter((r) => r.backfilled).length;
 ---
 <Base title={d.title} description={d.summary}>
   <div class="container">
@@ -32,6 +42,15 @@ const running = d.status === "running" || d.status === "planned";
       </div>
       <p class="lede">{d.summary}</p>
     </header>
+
+    {d.verdict && (
+      <div class={`callout verdict status-${d.status}`}>
+        <p><strong>Verdict.</strong> {d.verdict}</p>
+        <p class="muted small" style="margin:0">{STATUS_HELP[d.status]}</p>
+      </div>
+    )}
+
+    {diagrams.map((e) => <EvidenceFigure ev={e} />)}
 
     <dl class="record study-record">
       <div><dt>The question</dt><dd>{d.question}</dd></div>
@@ -49,11 +68,10 @@ const running = d.status === "running" || d.status === "planned";
       </div>
     </dl>
 
-    {d.verdict && (
-      <div class={`callout verdict status-${d.status}`}>
-        <p><strong>Verdict.</strong> {d.verdict}</p>
-        <p class="muted small" style="margin:0">{STATUS_HELP[d.status]}</p>
-      </div>
+    {charts.length > 0 && (
+      <section class="evidence" aria-label="Charts">
+        {charts.map((e) => <EvidenceChart ev={e} />)}
+      </section>
     )}
 
     {d.key_results && d.key_results.length > 0 && (
@@ -69,7 +87,41 @@ const running = d.status === "running" || d.status === "planned";
       </section>
     )}
 
+    {supporting.length > 0 && (
+      <section class="evidence" aria-label="Tables and figures">
+        {supporting.map((e) => (e.type === "table" ? <DataTable ev={e} /> : <EvidenceFigure ev={e} />))}
+      </section>
+    )}
+
     <article class="prose"><Content /></article>
+
+    {runs.length > 0 && (
+      <details class="runs">
+        <summary>The {runs.length} {runs.length === 1 ? "run" : "runs"} behind this study</summary>
+        <p class="muted small">
+          Each run is one recorded execution: a command, a code version and a seed.
+          {nBackfilled > 0 && ` ${nBackfilled} of these records were written after the run, from the lab log and output files, and are marked as backfilled.`}
+          Full records are in the <a href={`${d.code_url}/runs`}>runs folder</a>.
+        </p>
+        <div class="results-wrap">
+          <table class="results">
+            <thead><tr><th scope="col">Run</th><th scope="col">Started</th><th scope="col">Host</th><th scope="col" class="num">Seed</th><th scope="col">Code version</th><th scope="col">Outcome</th></tr></thead>
+            <tbody>
+              {runs.map((r) => (
+                <tr>
+                  <th scope="row" class="mono">{r.id}</th>
+                  <td>{r.started.slice(0, 10)}</td>
+                  <td>{r.host}</td>
+                  <td class="num">{r.seed ?? "—"}</td>
+                  <td class="mono">{r.commit || "—"}</td>
+                  <td>{r.exit_code === 0 ? "Finished" : r.exit_code == null ? "No exit code" : `Failed (${r.exit_code})`}{r.backfilled && <span class="muted"> · backfilled</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    )}
 
     {posts.length > 0 && (
       <section class="section" style="margin-top:48px">

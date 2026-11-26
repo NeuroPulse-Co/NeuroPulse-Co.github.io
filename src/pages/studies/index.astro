@@ -16,6 +16,7 @@ const order = ["running", "closed-positive", "closed-negative", "closed-inconclu
       <details class="muted small" style="max-width:46rem">
         <summary>What the statuses mean</summary>
         <ul>{order.map((s) => <li><StatusBadge status={s} /> {STATUS_HELP[s]}</li>)}</ul>
+        <p><a href="/research/#records">How we keep records</a></p>
       </details>
     </section>
     <section class="section">

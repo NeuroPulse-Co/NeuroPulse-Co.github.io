@@ -87,3 +87,29 @@ export function fmtNumber(v: number) {
   if (v !== 0 && Math.abs(v) < 1e-3) return v.toExponential(0);
   return String(v);
 }
+
+/** Decimal places of a number as written in the data (YAML/CSV), capped at 3. */
+export const decimals = (v: unknown) =>
+  typeof v === "number" && !Number.isInteger(v) ? Math.min(3, String(v).split(".")[1]?.length ?? 0) : 0;
+
+/** A number for display: fixed decimals, typographic minus. */
+export const fmtFixed = (v: number, d: number) => v.toFixed(d).replace(/^-/, "−");
+
+/** "Nice" axis ticks covering [lo, hi]: steps of 1, 2 or 5 times a power of ten. */
+export function niceTicks(lo: number, hi: number, target = 5) {
+  const raw = (hi - lo) / Math.max(1, target);
+  const mag = 10 ** Math.floor(Math.log10(raw || 1));
+  const step = [1, 2, 5, 10].map((m) => m * mag).find((s) => raw <= s) ?? 10 * mag;
+  const start = Math.floor(lo / step) * step, end = Math.ceil(hi / step) * step;
+  const ticks: number[] = [];
+  for (let t = start; t <= end + step / 2; t += step) ticks.push(Number(t.toFixed(10)));
+  return { ticks, lo: start, hi: end, step };
+}
+
+export const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+/** Sample standard deviation (n − 1), as in our results tables; undefined for a single value. */
+export const sd = (xs: number[]) => {
+  if (xs.length < 2) return undefined;
+  const m = mean(xs);
+  return Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1));
+};

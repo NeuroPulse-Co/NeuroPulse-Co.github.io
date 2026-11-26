@@ -1,0 +1,18 @@
+---
+// A diagram (Excalidraw, standards/DIAGRAMS.md) or a figure made by the research code.
+// Both sit on a white card, because they are drawn for a white background.
+import type { ImageMetadata } from "astro";
+
+interface Props { ev: { type: "diagram" | "figure"; title: string; caption: string; src: ImageMetadata; source_url: string } }
+const { ev } = Astro.props;
+---
+<figure class={`ev ev-${ev.type}`}>
+  <h3 class="ev-title">{ev.title}</h3>
+  <a class="ev-image" href={ev.src.src} title="Open full size">
+    <img src={ev.src.src} width={ev.src.width} height={ev.src.height} alt={`${ev.title}. ${ev.caption}`} loading="lazy" decoding="async" />
+  </a>
+  <figcaption class="ev-caption">
+    {ev.caption}
+    {ev.type === "diagram" && <span class="ev-meta"><a href={ev.source_url}>Editable Excalidraw file</a></span>}
+  </figcaption>
+</figure>
