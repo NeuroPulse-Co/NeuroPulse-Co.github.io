@@ -9,10 +9,16 @@
   --st-inconclusive: #854d0e; --st-inconclusive-bg: #fbf0c6;
   --st-abandoned: #4b5563;    --st-abandoned-bg: #e7e9ec;
   --prose: 68ch;
+
+  /* Chart series: the first three slots of a validated categorical palette (every pair distinguishable).
+     EvidenceChart refuses a fourth series rather than give it a weak colour. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
 }
 
 .page { padding: 40px 0 0; }
-.section { margin: 0 auto 72px; }
+.section { margin: 0 0 72px; } /* left-aligned: a capped section (.prose) keeps the page's left edge */
 .section-head { margin-bottom: 20px; max-width: var(--prose); }
 .section-head h2, .section > h2 { font-size: clamp(1.45rem, 2.4vw, 1.75rem); }
 .lede { font-size: 1.15rem; color: var(--text-muted); max-width: var(--prose); }
@@ -42,70 +48,22 @@ a.card:hover h3 { color: var(--accent); }
 .status-abandoned { --c: var(--st-abandoned); --c-bg: var(--st-abandoned-bg); }
 .ws-tag { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; color: var(--text-muted); }
 
-/* ---------- Home: intro ---------- */
-.opening { display: grid; grid-template-columns: minmax(0, 46rem) minmax(0, 1fr); gap: 20px 56px; align-items: start; margin-bottom: 56px; }
-@media (max-width: 1000px) { .opening { grid-template-columns: 1fr; gap: 20px; margin-bottom: 48px; } }
-.intro-head { grid-column: 1 / -1; max-width: 46rem; padding-top: 16px; }
-.intro-head h1 { font-size: clamp(1.9rem, 4.2vw, 2.75rem); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
-.byline { font-size: 0.95rem; color: var(--text-muted); margin: 0; }
-.intro .lede { font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.6; color: var(--text); margin-bottom: 18px; }
-.tally { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 24px; margin: 0 0 24px; padding: 12px 0;
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 0.98rem; line-height: 1.9; }
-/* In the sentence, a status reads as coloured bold text, so punctuation sits tight against it. */
-.tally .status { background: none; padding: 0; font-size: inherit; font-weight: 700; vertical-align: baseline; }
-.tally-date { color: var(--text-muted); margin-left: auto; font-size: 0.92rem; }
-.intro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
-.text-link { font-weight: 600; }
+/* ---------- Home: the story (three chapters in the reading column) ---------- */
+.story-head { max-width: 46rem; padding: 16px 0 8px; margin-bottom: 8px; }
+.story-head h1 { font-size: clamp(1.9rem, 4.2vw, 2.75rem); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 12px; }
+.byline { font-size: 0.95rem; color: var(--text-muted); margin: 0; max-width: var(--prose); }
+.story section { padding-top: 8px; }
+.story section + section { margin-top: 24px; border-top: 1px solid var(--border); }
+.story-foot { display: flex; flex-wrap: wrap; gap: 8px 24px; max-width: var(--prose); margin-top: 40px; padding-top: 16px;
+  border-top: 2px solid var(--text); font-weight: 600; }
 
-/* ---------- Home: plan change ---------- */
-/* A margin note: hairline top rule, no box. Sits beside the lede on wide screens. */
-.plan-note { border-top: 1px solid var(--text); padding-top: 12px; margin-top: 6px; max-width: 46rem; }
-.plan-note h2 { font-size: 1rem; margin-bottom: 6px; }
-.plan-note p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.55; margin: 0; }
-@media (max-width: 1000px) { .plan-note { margin-top: 0; } }
-
-/* ---------- Home: study table ---------- */
+/* ---------- Records (research page): status legend, annotated record, numbered rules ---------- */
 .legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px 32px; margin: 0 0 14px; padding: 0; }
 .legend div { display: grid; grid-template-columns: 6.75rem 1fr; gap: 10px; align-items: baseline; font-size: 0.9rem; line-height: 1.45; color: var(--text-muted); }
-.legend dt { margin: 0; }
-.legend dd { margin: 0; }
-.legend-note { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; max-width: var(--prose); }
+.legend dt, .legend dd { margin: 0; }
+.legend-note { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 28px; max-width: var(--prose); }
 
-.board { width: 100%; border-collapse: collapse; border-top: 2px solid var(--text); }
-.board th, .board td { text-align: left; vertical-align: top; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--border); }
-.board thead th { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); padding-top: 10px; padding-bottom: 10px; }
-.board .col-status { width: 8.5rem; }
-.board .col-evidence { width: 15rem; }
-.board .col-dates { width: 12.5rem; padding-right: 0; }
-@media (min-width: 761px) { .board .dates { white-space: nowrap; } }
-.board .ws-row th { padding-top: 28px; padding-bottom: 10px; border-bottom: 1px solid var(--border-strong); font-weight: 400; }
-.board tbody:first-of-type .ws-row th { padding-top: 16px; }
-.ws-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.ws-head h3 { font-size: 1.1rem; margin: 0; }
-.ws-head h3 a { color: var(--text); text-decoration: none; }
-.ws-head h3 a:hover { color: var(--accent); text-decoration: underline; }
-.ws-question { display: block; margin-top: 2px; font-size: 0.95rem; color: var(--text-muted); max-width: 70ch; }
-.board .study-link { color: var(--text); font-weight: 600; text-decoration: none; line-height: 1.4; }
-.board .study-link:hover { color: var(--accent); text-decoration: underline; }
-.board td.evidence, .board td.dates { font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.6; color: var(--text-muted); padding-top: 15px; }
-.board .owner { display: block; font-size: 0.88rem; color: var(--text-muted); margin-top: 2px; }
-.board .plan-row td:not(.dates) { color: var(--text-muted); font-size: 0.95rem; }
-.board .plan-row .status { margin-top: 1px; }
-.board td.label-cell { padding-top: 13px; }
-
-@media (max-width: 760px) {
-  .board thead { display: none; }
-  .board, .board tbody, .board tr, .board th, .board td { display: block; width: auto; }
-  .board .study-row, .board .plan-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .board .study-row td, .board .plan-row td { border: none; padding: 0; }
-  .board .study-row td:nth-child(2), .board .plan-row td:nth-child(2) { grid-column: 2; }
-  .board .study-row td:nth-child(n+3), .board .plan-row td:nth-child(n+3) { grid-column: 2; }
-  .board .ws-row th { padding: 24px 0 8px; }
-  .board td.label-cell { padding-top: 1px; }
-}
-
-/* ---------- Home: annotated record ---------- */
-.record-wrap { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.record-wrap { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; margin-bottom: 16px; }
 .record { margin: 0; border: 1px solid var(--border); border-radius: var(--radius-lg); }
 .record > div { display: grid; grid-template-columns: 10rem 1fr; gap: 16px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .record > div:last-child { border-bottom: none; }
@@ -115,11 +73,12 @@ a.card:hover h3 { color: var(--accent); }
 .record dd .muted { display: block; margin-top: 4px; font-size: 0.9rem; }
 .record-result { font-variant-numeric: tabular-nums; }
 .record-result strong { font-family: var(--font-mono); font-weight: 500; font-size: 1.1rem; }
+/* The rules are numbered so the record's superscripts (1, 2, 3) can point at them. */
 .principles { margin: 0; padding: 0; list-style: none; counter-reset: p; }
 .principles li { counter-increment: p; padding: 0 0 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
 .principles li:last-child { border-bottom: none; }
-.principles h3 { font-size: 1.02rem; margin-bottom: 4px; }
-.principles h3::before { content: counter(p); color: var(--accent); font-size: 0.8em; vertical-align: super; margin-right: 6px; }
+.principles :is(h3, h4) { font-size: 1.02rem; margin-bottom: 4px; }
+.principles :is(h3, h4)::before { content: counter(p); color: var(--accent); font-size: 0.8em; vertical-align: super; margin-right: 6px; }
 .principles p { color: var(--text-muted); font-size: 0.95rem; margin: 0; }
 @media (max-width: 860px) {
   .record-wrap { grid-template-columns: 1fr; gap: 28px; }
@@ -185,6 +144,7 @@ a.card:hover h3 { color: var(--accent); }
 .study-table th, .study-table td { text-align: left; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
 .study-table th { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .study-table td a { font-weight: 600; }
+.study-table td.dates { font-family: var(--font-mono); font-size: 0.8rem; white-space: nowrap; padding-top: 15px; }
 @media (max-width: 720px) {
   .study-table thead { display: none; }
   .study-table tr { display: block; padding: 12px 0; border-bottom: 1px solid var(--border); }
@@ -216,6 +176,9 @@ a.card:hover h3 { color: var(--accent); }
 .flow li strong { display: block; margin-bottom: 4px; }
 .flow li span { color: var(--text-muted); font-size: 0.95rem; }
 @media (max-width: 900px) { .flow { grid-template-columns: 1fr; } }
+/* A section that introduces a numbered flow stays close to it; the flow belongs to that section. */
+.section:has(+ .flow) { margin-bottom: 0; }
+.flow:has(+ .section) { margin-bottom: 20px; }
 
 /* ---------- Text wrapping and measure ---------- */
 p, li, dd, .lede { text-wrap: pretty; }

@@ -7,7 +7,7 @@ interface Props { ev: { type: "diagram" | "figure"; title: string; caption: stri
 const { ev } = Astro.props;
 ---
 <figure class={`ev ev-${ev.type}`}>
-  <h3 class="ev-title">{ev.title}</h3>
+  <h2 class="ev-title">{ev.title}</h2>
   <a class="ev-image" href={ev.src.src} title="Open full size">
     <img src={ev.src.src} width={ev.src.width} height={ev.src.height} alt={`${ev.title}. ${ev.caption}`} loading="lazy" decoding="async" />
   </a>
