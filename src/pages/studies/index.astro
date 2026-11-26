@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import StatusBadge from "../../components/StatusBadge.astro";
-import { studies, studyPath, STATUS_LABEL, STATUS_HELP, fmtDate } from "../../lib/data";
+import { studies, studyPath, STATUS_HELP, fmtRange } from "../../lib/data";
 const all = await studies();
 const order = ["running", "closed-positive", "closed-negative", "closed-inconclusive", "planned", "abandoned"];
 ---
@@ -28,7 +28,7 @@ const order = ["running", "closed-positive", "closed-negative", "closed-inconclu
               <td><a href={studyPath(s)}>{s.data.title}</a><div class="muted small">{s.data.repo} · {s.data.owner.join(", ")}</div></td>
               <td><StatusBadge status={s.data.status} /></td>
               <td><span class="ws-tag">{s.data.workstream}</span></td>
-              <td class="muted small">{fmtDate(s.data.started)}{s.data.closed && <> to {fmtDate(s.data.closed)}</>}</td>
+              <td class="muted small dates">{fmtRange(s.data.started, s.data.closed)}</td>
             </tr>
           ))}
         </tbody>

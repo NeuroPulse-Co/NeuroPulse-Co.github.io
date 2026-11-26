@@ -16,7 +16,7 @@ interface Props {
   };
 }
 const { ev } = Astro.props;
-const COLORS = ["#2a78d6", "#eb6834", "#1baf7a"];
+const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"]; // tokens in site.css
 const label = (v: unknown) => ev.labels?.[String(v)] ?? String(v);
 
 // Groups and series in order of first appearance; raw values that share a display label merge
@@ -71,7 +71,7 @@ const runs = rows.reduce((n, r) => n + r.ys.length, 0);
 const summary = `${ev.title}. ${rows.map((r) => `${r.g}${r.s ? `, ${r.s}` : ""}: mean ${f(r.m)}`).join("; ")}.`;
 ---
 <figure class="ev">
-  <h3 class="ev-title">{ev.title}</h3>
+  <h2 class="ev-title">{ev.title}</h2>
   {seriesNames.length > 1 && (
     <ul class="chart-legend" aria-label="Series">
       {seriesNames.map((s) => <li><span class="key" style={`--c:${color(s)}`}></span>{s}</li>)}

@@ -18,7 +18,7 @@ const show = (k: string, v: number | string | null) =>
 const long = ev.rows.length > 12;
 ---
 <figure class="ev">
-  <h3 class="ev-title">{ev.title}</h3>
+  <h2 class="ev-title">{ev.title}</h2>
   <figcaption class="ev-caption">
     {ev.caption}
     <span class="ev-meta">Measured on {SPLIT_LABEL[ev.split]}. <a href={ev.source_url}>Source data</a></span>
