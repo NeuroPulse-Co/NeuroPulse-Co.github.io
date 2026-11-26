@@ -1,0 +1,39 @@
+---
+// A study table from the rows record.py promote put in the frontmatter. Number columns are
+// right-aligned with tabular figures and one precision per column. Tables longer than 12 rows
+// start collapsed, because they support a chart rather than lead the page.
+import { SPLIT_LABEL, decimals, fmtFixed } from "../lib/data";
+
+interface Props {
+  ev: {
+    title: string; caption: string; split: string; columns: { key: string; label: string }[];
+    labels?: Record<string, string>; rows: Record<string, number | string | null>[]; source_url: string;
+  };
+}
+const { ev } = Astro.props;
+const numeric = Object.fromEntries(ev.columns.map((c) => [c.key, ev.rows.every((r) => r[c.key] === null || typeof r[c.key] === "number")]));
+const dec = Object.fromEntries(ev.columns.map((c) => [c.key, Math.max(0, ...ev.rows.map((r) => decimals(r[c.key])))]));
+const show = (k: string, v: number | string | null) =>
+  v === null ? "—" : typeof v === "number" ? (numeric[k] ? fmtFixed(v, dec[k]) : String(v)) : (ev.labels?.[v] ?? v);
+const long = ev.rows.length > 12;
+---
+<figure class="ev">
+  <h3 class="ev-title">{ev.title}</h3>
+  <figcaption class="ev-caption">
+    {ev.caption}
+    <span class="ev-meta">Measured on {SPLIT_LABEL[ev.split]}. <a href={ev.source_url}>Source data</a></span>
+  </figcaption>
+  <details class="ev-table" open={!long}>
+    <summary>{long ? `Show all ${ev.rows.length} rows` : "Table"}</summary>
+    <div class="results-wrap">
+      <table class="results data-table">
+        <thead><tr>{ev.columns.map((c) => <th scope="col" class={numeric[c.key] ? "num" : ""}>{c.label}</th>)}</tr></thead>
+        <tbody>
+          {ev.rows.map((r) => (
+            <tr>{ev.columns.map((c) => <td class={numeric[c.key] ? "num" : ""}>{show(c.key, r[c.key])}</td>)}</tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>

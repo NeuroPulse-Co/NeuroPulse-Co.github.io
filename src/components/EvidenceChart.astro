@@ -1,0 +1,150 @@
+---
+// A study chart, drawn at build time from the rows record.py promote put in the frontmatter.
+// It is a horizontal strip plot in HTML and CSS: one row per group (and per series inside a group),
+// one dot per data row (usually one seed), and the mean ± standard deviation of each row.
+// kind "bars" draws the mean as a bar from zero instead. Positions are percentages, so the chart
+// stays sharp and readable at any width. Colours: the first three slots of the validated
+// categorical palette (all-pairs safe); a fourth series is refused rather than given a weak colour.
+import { SPLIT_LABEL, decimals, fmtFixed, mean, niceTicks, sd } from "../lib/data";
+
+interface Props {
+  ev: {
+    title: string; caption: string; kind: "dots" | "bars"; x: string; y: string; series?: string;
+    x_label?: string; y_label: string; split: string; labels?: Record<string, string>;
+    reference?: { label: string; value: number }; rows: Record<string, number | string | null>[];
+    source_url: string;
+  };
+}
+const { ev } = Astro.props;
+const COLORS = ["#2a78d6", "#eb6834", "#1baf7a"];
+const label = (v: unknown) => ev.labels?.[String(v)] ?? String(v);
+
+// Groups and series in order of first appearance; raw values that share a display label merge
+// (three random draws become one "Random filters" group).
+const groupNames: string[] = [], seriesNames: string[] = [];
+const cells = new Map<string, number[]>();
+for (const r of ev.rows) {
+  const y = r[ev.y];
+  if (typeof y !== "number") continue;
+  const g = label(r[ev.x]), s = ev.series ? label(r[ev.series]) : "";
+  if (!groupNames.includes(g)) groupNames.push(g);
+  if (!seriesNames.includes(s)) seriesNames.push(s);
+  const k = `${g}\u0000${s}`;
+  cells.set(k, [...(cells.get(k) ?? []), y]);
+}
+if (seriesNames.length > COLORS.length) {
+  throw new Error(`Chart "${ev.title}": ${seriesNames.length} series; at most ${COLORS.length} can be told apart. Split it into two charts.`);
+}
+const color = (s: string) => COLORS[seriesNames.indexOf(s)];
+
+const rows = groupNames.flatMap((g) =>
+  seriesNames
+    .filter((s) => cells.has(`${g}\u0000${s}`))
+    .map((s, i) => {
+      const ys = cells.get(`${g}\u0000${s}`)!;
+      return { g, s, first: i === 0, ys, m: mean(ys), sd: sd(ys) };
+    }),
+);
+
+// Shared scale: every value, every mean ± sd, the reference line, and zero for bars.
+const all = rows.flatMap((r) => [...r.ys, r.m - (r.sd ?? 0), r.m + (r.sd ?? 0)]);
+if (ev.reference) all.push(ev.reference.value);
+if (ev.kind === "bars") all.push(0);
+const { ticks, lo, hi } = niceTicks(Math.min(...all), Math.max(...all));
+const pct = (v: number) => ((v - lo) / (hi - lo)) * 100;
+const d = Math.min(2, Math.max(...ev.rows.map((r) => decimals(r[ev.y]))));
+const f = (v: number) => fmtFixed(v, d);
+const tickD = Math.max(0, ...ticks.map(decimals));
+
+// Spread overlapping dots vertically so every seed stays visible.
+const offsets = (ys: number[]) => {
+  const placed: { x: number; dy: number }[] = [];
+  return ys.map((y) => {
+    const x = pct(y);
+    const near = placed.filter((p) => Math.abs(p.x - x) < 1.6).length;
+    const dy = near === 0 ? 0 : (near % 2 ? -1 : 1) * Math.ceil(near / 2) * 5;
+    placed.push({ x, dy });
+    return { x, dy, y };
+  });
+};
+const runs = rows.reduce((n, r) => n + r.ys.length, 0);
+const summary = `${ev.title}. ${rows.map((r) => `${r.g}${r.s ? `, ${r.s}` : ""}: mean ${f(r.m)}`).join("; ")}.`;
+---
+<figure class="ev">
+  <h3 class="ev-title">{ev.title}</h3>
+  {seriesNames.length > 1 && (
+    <ul class="chart-legend" aria-label="Series">
+      {seriesNames.map((s) => <li><span class="key" style={`--c:${color(s)}`}></span>{s}</li>)}
+    </ul>
+  )}
+  <div class={`chart chart-${ev.kind}`} role="img" aria-label={summary}>
+    <div class="chart-row chart-top" aria-hidden="true">
+      <div class="chart-label chart-colhead">{ev.x_label}</div>
+      <div class="chart-track">
+        {ev.reference && <span class="chart-ref-label" style={`--x:${pct(ev.reference.value)}`}>{ev.reference.label}, {f(ev.reference.value)}</span>}
+      </div>
+      <div class="chart-value chart-colhead">{ev.kind === "bars" ? "Mean" : "Mean ± sd"}</div>
+    </div>
+    {rows.map((r) => (
+      <div class={`chart-row${r.first ? " chart-group-start" : ""}`} aria-hidden="true">
+        <div class="chart-label">{r.first ? r.g : ""}</div>
+        <div class="chart-track">
+          {ticks.map((t) => <span class={`chart-grid${t === 0 ? " chart-zero" : ""}`} style={`--x:${pct(t)}`}></span>)}
+          {ev.reference && <span class="chart-ref" style={`--x:${pct(ev.reference.value)}`}></span>}
+          {ev.kind === "bars" ? (
+            <span class="chart-bar" style={`--a:${Math.min(pct(0), pct(r.m))};--w:${Math.abs(pct(r.m) - pct(0))};--c:${color(r.s)}`} title={`${r.g}${r.s ? `, ${r.s}` : ""}: ${f(r.m)}`}></span>
+          ) : (
+            <>
+              {r.sd !== undefined && <span class="chart-whisker" style={`--a:${pct(r.m - r.sd)};--w:${pct(r.m + r.sd) - pct(r.m - r.sd)};--c:${color(r.s)}`}></span>}
+              {offsets(r.ys).map((p) => (
+                <span class="chart-dot" style={`--x:${p.x};--dy:${p.dy}px;--c:${color(r.s)}`} title={`${r.g}${r.s ? `, ${r.s}` : ""}: ${f(p.y)}`}></span>
+              ))}
+              {r.ys.length > 1 && <span class="chart-mean" style={`--x:${pct(r.m)}`}></span>}
+            </>
+          )}
+        </div>
+        <div class="chart-value">
+          {r.s && <span class="key" style={`--c:${color(r.s)}`}></span>}
+          {f(r.m)}{r.sd !== undefined && ev.kind !== "bars" && <span class="muted sd"> ± {f(r.sd)}</span>}
+        </div>
+      </div>
+    ))}
+    <div class="chart-row chart-axis" aria-hidden="true">
+      <div class="chart-label"></div>
+      <div class="chart-track">
+        {ticks.map((t) => <span class="chart-tick" style={`--x:${pct(t)}`}>{fmtFixed(t, tickD)}</span>)}
+      </div>
+      <div class="chart-value"></div>
+    </div>
+    <div class="chart-row chart-axis-title" aria-hidden="true">
+      <div class="chart-label"></div>
+      <div class="chart-track-title">{ev.y_label}</div>
+      <div class="chart-value"></div>
+    </div>
+  </div>
+  <figcaption class="ev-caption">
+    {ev.caption}
+    <span class="ev-meta">
+      {ev.kind === "dots" ? "The dark tick marks the mean; the line spans one standard deviation either side. " : ""}
+      Measured on {SPLIT_LABEL[ev.split]}, {runs} {runs === 1 ? "run" : "runs"}. <a href={ev.source_url}>Source data</a>
+    </span>
+  </figcaption>
+  <details class="ev-numbers">
+    <summary>Show the numbers</summary>
+    <div class="results-wrap">
+      <table class="results">
+        <thead><tr><th scope="col">{ev.x_label ?? "Group"}</th>{ev.series && <th scope="col">Series</th>}<th scope="col" class="num">Runs</th><th scope="col" class="num">Mean</th><th scope="col" class="num">sd</th><th scope="col">Values</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.g}</th>{ev.series && <td>{r.s}</td>}
+              <td class="num">{r.ys.length}</td><td class="num">{f(r.m)}</td>
+              <td class="num">{r.sd === undefined ? "—" : f(r.sd)}</td>
+              <td class="num">{r.ys.map(f).join(", ")}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </details>
+</figure>

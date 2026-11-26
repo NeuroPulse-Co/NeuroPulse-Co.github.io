@@ -1,13 +1,21 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { getCollection } from "astro:content";
-import { studies } from "../../lib/data";
+import StatusBadge from "../../components/StatusBadge.astro";
+import { studies, studyPath, STATUS_LABEL, STATUS_HELP, SPLIT_LABEL } from "../../lib/data";
 
 const ws = Object.fromEntries((await getCollection("workstreams")).map((w) => [w.data.id, w.data]));
 const all = await studies();
 const n = (id: string) => all.filter((s) => s.data.workstream === id).length;
 const card = (id: string) => ({ id, href: `/research/${id.toLowerCase()}/`, ...ws[id], count: n(id) });
 const stages = [[card("W0")], [card("W1")], [card("W2")], [card("W3"), card("W4")], [card("W5")]];
+
+// "How we keep records": the status vocabulary, and one real study record annotated with the rules.
+const ORDER = ["closed-positive", "closed-negative", "closed-inconclusive", "running", "planned", "abandoned"];
+const example = all.find((s) => s.data.id === "cifar10-repro") ?? all.find((s) => s.data.status.startsWith("closed"));
+const ex = example?.data;
+const kr = ex?.key_results?.[0];
+const num = (v: number) => v.toFixed(2).replace(/^-/, "−");
 ---
 <Base title="Research" description="How the NeuroPulse project fits together: six workstreams, from reproducing ASF-S to continual learning.">
   <div class="container">
@@ -61,6 +69,62 @@ const stages = [[card("W0")], [card("W1")], [card("W2")], [card("W3"), card("W4"
         Step 5 is where our work found the most trouble. As written, the formula multiplies vectors of different lengths, and the original code resolves
         this in a way that makes the score close to random. The details are in the <a href="/research/w1/">reproduction studies</a>. Our corrected version
         is the one we test in <a href="/research/w2/">W2</a>.
+      </p>
+    </section>
+
+    <section class="section" id="records" aria-labelledby="records-title">
+      <h2 id="records-title">How we keep records</h2>
+      <p class="lede">
+        Every experiment belongs to a study: one question, a hypothesis, and a success criterion. When a study ends, it gets one of six statuses,
+        and we report the ones that did not hold as fully as the ones that did.
+      </p>
+      <dl class="legend" aria-label="What each status means">
+        {ORDER.map((st) => (
+          <div><dt><span class={`status status-${st}`}>{STATUS_LABEL[st]}</span></dt><dd>{STATUS_HELP[st]}</dd></div>
+        ))}
+      </dl>
+      <p class="legend-note">
+        <strong>Pre-registered</strong> means the success criterion was written down before any results existed; <strong>post hoc</strong> means after,
+        and we label it so. Every number says whether it comes from validation or test data, and how many seeds (independent training runs) it averages.
+      </p>
+
+      {ex && example && (
+        <>
+          <h3>One real record, annotated</h3>
+          <p class="muted">This is the record of our CIFAR-10 reproduction, as it appears on its study page. The numbers point to the rules on the right.</p>
+          <div class="record-wrap">
+            <dl class="record">
+              <div><dt>Question<sup>1</sup></dt><dd>{ex.question}</dd></div>
+              <div>
+                <dt>Criterion<sup>1</sup></dt>
+                <dd>
+                  {ex.criterion === "pre_registered" ? "Pre-registered: written down before any results existed." : "Post hoc: written or revised after results existed, and labelled as such."}
+                  <span class="muted">The full success criterion is on the study page.</span>
+                </dd>
+              </div>
+              {kr && (
+                <div>
+                  <dt>Headline number<sup>2</sup></dt>
+                  <dd class="record-result">
+                    <strong>{num(kr.value)}{kr.std !== undefined && ` ± ${kr.std.toFixed(2)}`}</strong> {kr.unit}
+                    {kr.compare && <> against <strong>{num(kr.compare.value)}</strong> ({kr.compare.label})</>}
+                    <span class="muted">{kr.label}. Measured on {SPLIT_LABEL[kr.split]}, {kr.n_seeds} {kr.n_seeds === 1 ? "seed" : "seeds"}.</span>
+                  </dd>
+                </div>
+              )}
+              {ex.verdict && <div><dt>Verdict<sup>3</sup></dt><dd><StatusBadge status={ex.status} /> <span class="muted">{ex.verdict}</span></dd></div>}
+              <div><dt>Code and records<sup>2</sup></dt><dd><a href={ex.code_url}>Code, configuration and lab log on GitHub</a>. <a href={studyPath(example)}>Open the full study page</a>.</dd></div>
+            </dl>
+            <ol class="principles">
+              <li><h4>One question per study</h4><p>Every experiment belongs to a study with a question, a hypothesis and a success criterion, and we say whether that criterion came before or after the results.</p></li>
+              <li><h4>Every number has a source</h4><p>Each result says whether it comes from validation or test data and how many seeds it averages. Each run records its code version and settings.</p></li>
+              <li><h4>Negative results count</h4><p>When something does not reproduce, we publish it with the same care, and separate what we ruled out from what we only suspect.</p></li>
+            </ol>
+          </div>
+        </>
+      )}
+      <p class="muted small">
+        The full rules are in our <a href="https://github.com/NeuroPulse-Co/.github/blob/main/standards/RECORDS.md">record standard</a>.
       </p>
     </section>
   </div>

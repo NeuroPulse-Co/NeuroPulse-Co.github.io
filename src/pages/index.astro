@@ -1,218 +1,92 @@
 ---
+// Home: the project as a short story in three chapters (plan §6, decided 2026-11-26).
+// No study table and no charts here; the evidence lives on /studies/ and on each study page.
+// Every number below is quoted from a closed study's study.yaml; S1 is still running, so it has none.
 import Base from "../layouts/Base.astro";
-import StatusBadge from "../components/StatusBadge.astro";
 import { getCollection } from "astro:content";
-import {
-  studies, studyPath, publishedPosts, postPath, timeline, people, fmtDate, fmtRange, evidenceOf,
-  STATUS_LABEL, STATUS_HELP, SPLIT_LABEL,
-} from "../lib/data";
+import { people, publishedPosts, studyPath } from "../lib/data";
 
-const ws = (await getCollection("workstreams")).sort((a, b) => a.data.id.localeCompare(b.data.id));
-const all = await studies();
-const posts = (await publishedPosts()).slice(0, 3);
-
-// Verdict breakdown, in the order a reader weighs them.
-const ORDER = ["closed-positive", "closed-negative", "closed-inconclusive", "running", "planned", "abandoned"];
-const tally = ORDER.map((st) => ({ st, n: all.filter((s) => s.data.status === st).length })).filter((t) => t.n > 0);
-const closedTally = tally.filter((t) => t.st.startsWith("closed"));
-const openTally = tally.filter((t) => !t.st.startsWith("closed"));
-const finished = closedTally.reduce((n, t) => n + t.n, 0);
-// The tally reads as one sentence: "5 studies finished: 1 Confirmed, 3 Did not hold and 1 Inconclusive; 1 In progress."
-// Separators are separate text parts so JSX whitespace never lands before a comma.
-const tallyParts: ({ st: string; n: number; text?: undefined } | { st?: undefined; n?: undefined; text: string })[] = [];
-closedTally.forEach((t, i) => {
-  if (i > 0) tallyParts.push({ text: i === closedTally.length - 1 ? " and " : ", " });
-  tallyParts.push(t);
-});
-openTally.forEach((t, i) => {
-  tallyParts.push({ text: i === 0 ? "; " : ", " });
-  tallyParts.push(t);
-});
-tallyParts.push({ text: "." });
 const supervisor = people().find((p) => p.role === "supervisor")?.name ?? "our supervisor";
-const w1 = all.filter((s) => s.data.workstream === "W1");
-const w1Finished = w1.filter((s) => s.data.status.startsWith("closed")).length;
-const w1Negative = w1.filter((s) => s.data.status === "closed-negative").length;
-const lastEntry = new Date(Math.max(...all.map((s) => (s.data.closed ?? s.data.started).getTime())));
-
-// Workstreams without studies say what they are and when they are scheduled, from timeline.yaml.
-const phases = timeline();
-const asDate = (v: unknown) => new Date(v as string);
-const phase = (id: string) => phases.find((p) => p.id === id);
-const task = (name: string) => phases.flatMap((p) => p.tasks).find((t) => t.name === name);
-const span = (x?: { start: unknown; end: unknown }) => (x ? fmtRange(asDate(x.start), asDate(x.end)) : "");
-const plans: Record<string, { label: string; when: string; text: string; link?: { href: string; label: string } }> = {
-  W0: { label: "", when: span(phase("p-foundations")), text: "Complete: the literature review, scope and method, and the proposal. It ran no experiments, so it has no studies.", link: { href: "/proposal/", label: "Read the proposal" } },
-  W3: { label: "Planned", when: span(task("Hard freezing with pluggable scores")), text: "Starts once W1 and W2 have settled whether ASF-S holds up." },
-  W4: { label: "Planned", when: span(task("Metaplastic soft consolidation")), text: "Starts once W1 and W2 have settled whether ASF-S holds up." },
-  W5: { label: "Planned", when: span(phase("p-final")), text: "Final runs with one look at the test set, the thesis, and the poster." },
+const all = await getCollection("studies");
+const link = (id: string) => {
+  const s = all.find((x) => x.data.id === id);
+  return s ? studyPath(s) : "/studies/";
 };
-
-// One real record, annotated, shows how every study is kept.
-const example = all.find((s) => s.data.id === "cifar10-repro") ?? all.find((s) => s.data.status.startsWith("closed"));
-const ex = example?.data;
-const kr = ex?.key_results?.[0];
-const num = (v: number) => v.toFixed(2).replace(/^-/, "−");
+const hasNotes = (await publishedPosts()).length > 0;
 ---
-<Base title="NeuroPulse">
+<Base title="NeuroPulse" description="Four students testing whether a network can learn new tasks without forgetting, by keeping the parts it needs to function.">
   <div class="container">
-    <section class="opening" aria-labelledby="intro-title">
-    <div class="intro-head">
-      <h1 id="intro-title">Can a network learn new tasks without forgetting, by keeping what it needs to function?</h1>
+    <header class="story-head">
+      <h1>Can a network learn new tasks without forgetting, by keeping what it needs to function?</h1>
       <p class="byline">
-        Four final-year students, Department of Computer Science and Engineering, University of Moratuwa.
-        Supervised by {supervisor}. <a href="/team/">Team</a>
+        We are four final-year students in the Department of Computer Science and Engineering at the University of Moratuwa, supervised by {supervisor}.
       </p>
-    </div>
-    <div class="intro">
-      <p class="lede">
-        We are testing an idea from neuroscience-inspired pruning: when a network learns tasks one after another, protect the parts that
-        matter most for how it <em>functions</em>, not just its largest weights.
-      </p>
-      <p class="tally">
-        <span><strong>{finished} {finished === 1 ? "study" : "studies"} finished:</strong> {tallyParts.map((p) =>
-          p.st ? <>{`${p.n} `}<span class={`status status-${p.st}`}>{STATUS_LABEL[p.st]}</span></> : p.text
-        )}</span>
-        <span class="tally-date">Last entry {fmtDate(lastEntry)}</span>
-      </p>
-      <div class="intro-actions">
-        <a class="btn btn-primary" href="#studies">Go to the study table</a>
-        <a class="text-link" href="/research/">How the project fits together</a>
-      </div>
-    </div>
+    </header>
 
-    <aside class="plan-note" aria-labelledby="plan-title">
-      <h2 id="plan-title">Why the plan changed</h2>
-      <p>
-        Our August 2026 proposal set out two continual learning methods built on the ASF-S pruning method (W3 and W4). Before building on
-        ASF-S, we needed to know whether it works as its paper reports, so reproducing it (W1) and testing its central idea fairly (W2) came first.
-        So far, {w1Negative} of the {w1Finished} finished W1 studies did not hold.
-        <a href="/research/w0/">Read the full background</a>.
-      </p>
-    </aside>
-    </section>
-
-    <section class="section" id="studies" aria-labelledby="studies-title">
-      <div class="section-head">
-        <h2 id="studies-title">Studies by workstream</h2>
-        <p class="muted">Each workstream is one thread of the project. Each study under it asks one question and records the answer.</p>
-      </div>
-      <dl class="legend" aria-label="What each status means">
-        {ORDER.map((st) => (
-          <div><dt><span class={`status status-${st}`}>{STATUS_LABEL[st]}</span></dt><dd>{STATUS_HELP[st]}</dd></div>
-        ))}
-      </dl>
-      <p class="legend-note">
-        <strong>Post hoc</strong> means the success criterion was written after results existed; <strong>pre-registered</strong> means before.
-        Seeds count the independent training runs behind a number. Terms such as ASF-S, AFC and PGI are defined in the <a href="/glossary/">glossary</a>.
-      </p>
-      <table class="board">
-        <thead>
-          <tr><th class="col-status" scope="col">Status</th><th scope="col">Study</th><th class="col-evidence" scope="col">Evidence</th><th class="col-dates" scope="col">Dates</th></tr>
-        </thead>
-        {ws.map((w) => {
-          const mine = all.filter((s) => s.data.workstream === w.data.id).sort((a, b) => a.data.started.getTime() - b.data.started.getTime());
-          const plan = plans[w.data.id];
-          return (
-            <tbody>
-              <tr class="ws-row">
-                <th colspan="4" scope="colgroup">
-                  <div class="ws-head">
-                    <span class="ws-tag">{w.data.id}</span>
-                    <h3><a href={`/research/${w.data.id.toLowerCase()}/`}>{w.data.title}</a></h3>
-                  </div>
-                  <span class="ws-question">{w.data.tagline}</span>
-                </th>
-              </tr>
-              {mine.map((s) => (
-                <tr class="study-row">
-                  <td class="label-cell"><StatusBadge status={s.data.status} /></td>
-                  <td>
-                    <a class="study-link" href={studyPath(s)}>{s.data.title}</a>
-                    <span class="owner">{s.data.owner.join(", ")}</span>
-                  </td>
-                  <td class="evidence">{evidenceOf(s.data)}</td>
-                  <td class="dates">{fmtRange(s.data.started, s.data.closed)}</td>
-                </tr>
-              ))}
-              {mine.length === 0 && plan && (
-                <tr class="plan-row">
-                  <td class="label-cell">{plan.label && <span class="status status-planned">{plan.label}</span>}</td>
-                  <td colspan="2">{plan.text}{plan.link && <> <a href={plan.link.href}>{plan.link.label}</a>.</>}</td>
-                  <td class="dates">{plan.when}</td>
-                </tr>
-              )}
-              {mine.length === 0 && !plan && (
-                <tr class="plan-row"><td class="label-cell"><span class="status status-planned">Planned</span></td><td colspan="3">No studies yet.</td></tr>
-              )}
-            </tbody>
-          );
-        })}
-      </table>
-    </section>
-
-    {ex && example && (
-      <section class="section" aria-labelledby="record-title">
-        <div class="section-head">
-          <h2 id="record-title">How to read a study</h2>
-          <p class="muted">Every study page follows the same record. Here is a real one, the CIFAR-10 reproduction, with the rules it follows.</p>
-        </div>
-        <div class="record-wrap">
-          <dl class="record">
-            <div><dt>Question<sup>1</sup></dt><dd>{ex.question}</dd></div>
-            <div>
-              <dt>Criterion<sup>1</sup></dt>
-              <dd>
-                {ex.criterion === "pre_registered" ? "Pre-registered: written down before any results existed." : "Post hoc: written or revised after results existed, and labelled as such."}
-                <span class="muted">The full success criterion is on the study page.</span>
-              </dd>
-            </div>
-            {kr && (
-              <div>
-                <dt>Headline number<sup>2</sup></dt>
-                <dd class="record-result">
-                  <strong>{num(kr.value)}{kr.std !== undefined && ` ± ${kr.std.toFixed(2)}`}</strong> {kr.unit}
-                  {kr.compare && <> against <strong>{num(kr.compare.value)}</strong> ({kr.compare.label})</>}
-                  <span class="muted">{kr.label}. Measured on {SPLIT_LABEL[kr.split]}, {kr.n_seeds} {kr.n_seeds === 1 ? "seed" : "seeds"}.</span>
-                </dd>
-              </div>
-            )}
-            {ex.verdict && <div><dt>Verdict<sup>3</sup></dt><dd><StatusBadge status={ex.status} /> <span class="muted">{ex.verdict}</span></dd></div>}
-            <div><dt>Code and records<sup>2</sup></dt><dd><a href={ex.code_url}>Code, configuration and lab log on GitHub</a>. <a href={studyPath(example)}>Open the full study page</a>.</dd></div>
-          </dl>
-          <ol class="principles">
-            <li><h3>One question per study</h3><p>Every experiment belongs to a study with a question, a hypothesis and a success criterion, and we say whether that criterion came before or after the results.</p></li>
-            <li><h3>Every number has a source</h3><p>Each result says whether it comes from validation or test data and how many seeds it averages. Each run records its code version and settings.</p></li>
-            <li><h3>Negative results count</h3><p>When something does not reproduce, we publish it with the same care, and separate what we ruled out from what we only suspect.</p></li>
-          </ol>
-        </div>
-        <p class="muted small" style="margin-top:20px">
-          The rules are in our <a href="https://github.com/NeuroPulse-Co/.github/blob/main/standards/RECORDS.md">record standard</a>,
-          and the code for every study is on <a href="https://github.com/NeuroPulse-Co">GitHub</a>.
+    <article class="story prose">
+      <section aria-labelledby="ch1">
+        <h2 id="ch1">What we set out to do</h2>
+        <p>
+          Train a neural network on one task, then on a second, and it forgets most of the first. The new training rewrites the weights the old task
+          depended on. One family of fixes sets aside part of the network for each task and freezes it, so later tasks cannot touch it. The best-known
+          of these, PackNet, decides what to keep by weight size: large weights stay, small ones are handed to the next task.
         </p>
+        <p>
+          We wanted to choose differently: keep the parts that shape how the network behaves, even when their weights are small. A recently published
+          method, Artificial Structure Function Search (ASF-S), offers a way to measure this. It watches how the network's output units respond together,
+          and scores every convolutional filter by how much it shapes that pattern. Its paper reports that a small convolutional network on CIFAR-10
+          keeps most of its accuracy after losing three quarters of its parameters, with only the last layer retrained. That was our starting point.
+        </p>
+        <p><a href="/research/">How the project fits together</a></p>
       </section>
-    )}
 
-    <section class="section" aria-labelledby="notes-title">
-      <div class="section-head">
-        <h2 id="notes-title">Latest lab notes</h2>
-        <p class="muted">Longer write-ups, posted when a study closes. They double as drafts of our thesis chapters.</p>
-      </div>
-      {posts.length > 0 ? (
-        <ul class="note-list">
-          {posts.map((p) => (
-            <li>
-              <a class="study-link" href={postPath(p)}>{p.data.title}</a>
-              <p class="muted small" style="margin:2px 0 0">{fmtDate(p.data.date)} · {p.data.authors.join(", ")} · {p.data.workstream}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="empty">
-          The first write-ups are being edited now. Until then, every finished study has its own page with the verdict,
-          the evidence and our reasoning. Start with the <a href="#studies">study table</a> above.
+      <section aria-labelledby="ch2">
+        <h2 id="ch2">What we found when we checked ASF-S</h2>
+        <p>
+          Before building on ASF-S, we checked that it does what its paper says. It mostly does not.
         </p>
-      )}
-    </section>
+        <p>
+          We <a href={link("cifar10-repro")}>rebuilt it from scratch on the paper's own setting</a> and checked every step against the paper.
+          Every step up to the last matches. The last one does not: after pruning, we lose 10.50 points of accuracy where the paper reports 3.78.
+          Scoring filters with the formula exactly as the paper writes it does no better than picking filters at random (−15.00 against −15.07).
+          Retraining the whole network instead of the last layer brings every method to about −5, and then the choice of filters hardly matters.
+        </p>
+        <p>
+          The other checks agree. On CIFAR-100, <a href={link("cifar100-port-audit")}>after we fixed three bugs in the ported code</a>, ASF-S kept
+          40.46% accuracy against 52.52% unpruned, and its scores were barely better than random. On the paper's smallest experiment,
+          <a href={link("mnist-lenet-sanity")}>LeNet-300-100 on MNIST</a>, the trained network reproduces exactly, but ASF-S never beats pruning
+          the smallest weights. A <a href={link("bert-pg-transfer")}>test on a BERT language model</a> could not separate any method from any other.
+        </p>
+        <p>
+          So we stopped reproducing and started measuring. We rebuilt the method as a <a href={link("s0-skeleton")}>tested package</a> that matches
+          the original code exactly, and we are now <a href={link("s1-baselines")}>comparing our corrected score with eleven other ways of choosing filters</a>
+          under one fair protocol. So far it beats random choice but loses to Taylor importance and to weight size.
+        </p>
+        <p><a href="/studies/">Every study, with its evidence</a></p>
+      </section>
+
+      <section aria-labelledby="ch3">
+        <h2 id="ch3">What we are doing next</h2>
+        <p>
+          By 6 December we decide whether the functional score earns a place in our method. We wrote the test down before running it: the corrected
+          score must come within the 95% confidence interval of the best simple score at the same size, or preserve the network's functional pattern
+          measurably better. If it does neither, it becomes one option among several, and our contribution moves to two things that hold either way:
+          deciding how much of the network each task gets, and the reproduction itself.
+        </p>
+        <p>
+          From December we build the two continual learning methods our proposal set out. The first freezes each task's most important units. The
+          second makes them harder to change without freezing them. In February we compare both against PackNet and other established methods on
+          Split-CIFAR, over five seeds, and look at the test set once, at the very end.
+        </p>
+        <p><a href="/timeline/">The timeline</a></p>
+      </section>
+    </article>
+
+    <nav class="story-foot" aria-label="More">
+      <a href="/studies/">Studies</a>
+      {hasNotes && <a href="/blog/">Lab notes</a>}
+      <a href="/research/#records">How we keep records</a>
+      <a href="https://github.com/NeuroPulse-Co">Code on GitHub</a>
+    </nav>
   </div>
 </Base>
